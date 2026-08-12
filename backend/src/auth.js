@@ -16,7 +16,7 @@ function lockState(ip) {
   return { fails: 0, until: 0 }
 }
 
-export function initAuth(app, { secret, log = () => {} }) {
+export function initAuth(app, { secret, log = () => {}, apiKeyValidator = null }) {
   const sign = (value) => crypto.createHmac('sha256', secret).update(value).digest('base64url')
   const unsign = (value, signature) => {
     const expected = sign(value)
@@ -26,7 +26,7 @@ export function initAuth(app, { secret, log = () => {} }) {
     return crypto.timingSafeEqual(a, b) ? value : null
   }
 
-  const readSession = (req) => {
+  const sessionFromCookie = (req) => {
     const cookie = req.headers.cookie
     if (!cookie) return null
     const match = cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${SESSION_COOKIE}=`))
@@ -40,6 +40,17 @@ export function initAuth(app, { secret, log = () => {} }) {
     if (session && session.expiresAt > Date.now()) {
       session.expiresAt = Date.now() + SESSION_TTL_MS
       return session
+    }
+    return null
+  }
+
+  const readSession = (req) => {
+    const session = sessionFromCookie(req)
+    if (session) return session
+    if (apiKeyValidator) {
+      const header = req.headers.authorization || ''
+      const key = header.startsWith('Bearer ') ? header.slice(7) : req.headers['x-api-key']
+      if (key && apiKeyValidator(key)) return { api: true }
     }
     return null
   }

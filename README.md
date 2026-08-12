@@ -13,6 +13,8 @@ A self-hosted web app to **power on PCs remotely via Wake-on-LAN** magic packets
 - Online/offline status via TCP probe to the SSH port (refreshes every 15s)
 - **Activity log**: history of wakes, shutdowns, logins, terminal sessions, and status changes
 - **Uptime sparkline**: 24h online/offline chart per device on the dashboard
+- **API key**: automation access without browser login (`Authorization: Bearer <key>`)
+- **Dark mode**: toggleable theme, persisted per browser
 - **Web terminal**: interactive SSH shell for any device with SSH configured (xterm.js + WebSocket)
 - Scheduled power on/off per device (timezone-aware, e.g. `TZ=Asia/Jakarta`)
 - LAN scanner with cached results (best run on the host, see [Docker notes](#docker))
@@ -172,6 +174,9 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 | GET | `/api/devices/:id/status` | Online/offline status |
 | GET | `/api/devices/:id/history?hours=24` | Status samples for uptime chart (auto-aggregates for long ranges) |
 | GET | `/api/activity?limit=&offset=` | Activity log (newest first) |
+| GET | `/api/settings/api-key` | API key status (active or not) |
+| POST | `/api/settings/api-key` | Generate a new API key (revokes the old one) |
+| DELETE | `/api/settings/api-key` | Revoke the API key |
 | WS | `/api/terminal?deviceId=:id` | Interactive SSH terminal (requires session cookie) |
 | GET | `/api/devices/wake-count` | Total wake actions |
 | GET | `/api/scan/cache` | Cached scan results |
@@ -179,7 +184,7 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 | POST | `/api/scan/stop` | Stop a running scan |
 | GET | `/api/scan/status` | Scan progress |
 
-All device endpoints require a valid session cookie (login first).
+All device endpoints require a valid session cookie or `Authorization: Bearer <api-key>`.
 
 ## Testing
 

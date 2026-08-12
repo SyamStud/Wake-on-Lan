@@ -201,5 +201,17 @@ export function createDeviceStore(db) {
     cleanupStatusHistory() {
       cleanupStatus.run('-30 days')
     },
+
+    getApiKeyHash() {
+      return getSetting('api_key_hash')
+    },
+
+    setApiKeyHash(hash) {
+      setSetting('api_key_hash', hash)
+    },
+
+    clearApiKey() {
+      setSetting('api_key_hash', '')
+    },
   }
 }

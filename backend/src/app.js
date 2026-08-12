@@ -11,13 +11,16 @@ import { initAuth } from './auth.js'
 import createDevicesRouter from './routes/devices.js'
 import createScanRouter from './routes/scan.js'
 import createActivityRouter from './routes/activity.js'
+import createSettingsRouter from './routes/settings.js'
 import { createActivityLog } from './activity.js'
+import { createApiKeyManager } from './api-key.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export function createApp({ sessionSecret, log = () => {}, activity = null }) {
   const store = createDeviceStore(db)
   const actions = createActions({ store, log })
+  const apiKey = createApiKeyManager(store)
 
   const app = express()
   app.locals.store = store
@@ -28,13 +31,14 @@ export function createApp({ sessionSecret, log = () => {}, activity = null }) {
     app.use(express.static(distDir))
   }
 
-  const auth = initAuth(app, { secret: sessionSecret, log })
+  const auth = initAuth(app, { secret: sessionSecret, log, apiKeyValidator: apiKey.validate })
 
   app.use('/api/devices', auth.requireAuth, createDevicesRouter({ store, actions, log }))
   app.use('/api/scan', auth.requireAuth, createScanRouter({ store }))
   if (activity) {
     app.use('/api/activity', auth.requireAuth, createActivityRouter({ activity }))
   }
+  app.use('/api/settings', auth.requireAuth, createSettingsRouter({ apiKey }))
 
   app.get('/api/devices/wake-count', auth.requireAuth, (req, res) => {
     res.json({ count: store.getWakeCount() })

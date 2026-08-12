@@ -11,6 +11,7 @@ import Login from './pages/Login.jsx'
 import Scan from './pages/Scan.jsx'
 import TerminalPage from './pages/Terminal.jsx'
 import Activity from './pages/Activity.jsx'
+import Settings from './pages/Settings.jsx'
 
 function RequireAuth({ authed }) {
   if (!authed) return <Navigate to="/login" replace />
@@ -41,6 +42,7 @@ export default function App() {
                   <Route path="/devices" element={<Devices />} />
                   <Route path="/scan" element={<Scan />} />
                   <Route path="/activity" element={<Activity />} />
+                  <Route path="/settings" element={<Settings />} />
                   <Route path="/terminal/:id" element={<TerminalPage />} />
                 </Route>
               </Route>

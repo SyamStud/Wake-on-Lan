@@ -2,11 +2,11 @@ import React from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { useUi } from '../contexts/UiContext.jsx'
-import { DashGridIcon, HistoryIcon, ListIcon, LogoutIcon, PowerIcon, WifiIcon } from '../icons.jsx'
+import { DashGridIcon, GearIcon, HistoryIcon, ListIcon, LogoutIcon, MoonIcon, PowerIcon, SunIcon, WifiIcon } from '../icons.jsx'
 
 export default function Layout({ onLogout }) {
   const navigate = useNavigate()
-  const { confirm } = useUi()
+  const { confirm, theme, toggleTheme } = useUi()
 
   const logout = async () => {
     const ok = await confirm({
@@ -46,6 +46,10 @@ export default function Layout({ onLogout }) {
             <HistoryIcon />
             <span className="nav-label">Aktivitas</span>
           </NavLink>
+          <NavLink to="/settings" className={navClass} title="Pengaturan" aria-label="Pengaturan">
+            <GearIcon />
+            <span className="nav-label">Pengaturan</span>
+          </NavLink>
         </nav>
         <div className="sidebar-footer">
           <button id="logout-btn" className="sidebar-btn" title="Keluar" aria-label="Keluar" onClick={logout}>
@@ -58,6 +62,14 @@ export default function Layout({ onLogout }) {
       <div className="main-wrapper">
         <header className="app-header">
           <h1 className="page-title">Wake on LAN</h1>
+          <button
+            className="header-icon"
+            title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+            aria-label="Ganti tema"
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
         </header>
         <Outlet />
       </div>
