@@ -1,0 +1,32 @@
+services:
+  wol:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: wol-server
+    restart: unless-stopped
+    # Docker Desktop WSL2: network_mode host menaruh container di distro
+    # docker-desktop sehingga tidak terjangkau dari browser. Pakai bridge
+    # + port mapping agar localhost:3000 jalan (Windows & WSL).
+    # Catatan: WoL broadcast perlu diverifikasi tembus ke LAN di setup ini.
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    env_file:
+      - backend/.env
+    environment:
+      # Zona waktu untuk jadwal nyala/mati otomatis
+      TZ: Asia/Jakarta
+      # Konsisten dengan port yang dipublish (override PORT dari backend/.env)
+      PORT: ${PORT:-3000}
+    volumes:
+      # Database SQLite (device, settings, password hash) tetap tersimpan
+      - ./backend/data:/app/data
+      # Letakkan SSH key device di folder keys/, lalu isi Path Key dengan
+      # /keys/<nama-key> pada form device. Folder boleh kosong.
+      - ./keys:/keys:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/me').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
