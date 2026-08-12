@@ -16,7 +16,7 @@ function lockState(ip) {
   return { fails: 0, until: 0 }
 }
 
-export function initAuth(app, { secret }) {
+export function initAuth(app, { secret, log = () => {} }) {
   const sign = (value) => crypto.createHmac('sha256', secret).update(value).digest('base64url')
   const unsign = (value, signature) => {
     const expected = sign(value)
@@ -64,9 +64,11 @@ export function initAuth(app, { secret }) {
     if (!ok) {
       const fails = lock.fails + 1
       loginAttempts.set(ip, { fails, until: fails >= MAX_ATTEMPTS ? Date.now() + LOCK_MS : 0 })
+      log('login_fail', { detail: `IP ${ip}` })
       return res.status(401).json({ error: 'Password salah' })
     }
     loginAttempts.delete(ip)
+    log('login', { detail: `IP ${ip}` })
     const token = crypto.randomBytes(32).toString('hex')
     sessions.set(token, { expiresAt: Date.now() + SESSION_TTL_MS })
     const signature = sign(token)
@@ -84,6 +86,7 @@ export function initAuth(app, { secret }) {
       }
     }
     res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`)
+    log('logout', {})
     res.json({ ok: true })
   })
 

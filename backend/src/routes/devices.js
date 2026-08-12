@@ -11,7 +11,7 @@ const wrap = (fn) => async (req, res) => {
   }
 }
 
-export default function createDevicesRouter({ store, actions }) {
+export default function createDevicesRouter({ store, actions, log = () => {} }) {
   const router = Router()
 
   router.get('/', (req, res) => {
@@ -25,18 +25,29 @@ export default function createDevicesRouter({ store, actions }) {
     res.json({ online })
   })
 
+  router.get('/:id/history', (req, res) => {
+    const device = store.getById(req.params.id)
+    if (!device) return res.status(404).json({ error: 'Device tidak ditemukan' })
+    const hours = Math.min(Math.max(Number(req.query.hours) || 24, 1), 24 * 30)
+    res.json({ samples: store.getStatusHistory(device.id, hours) })
+  })
+
   router.post('/', wrap(async (req, res) => {
     const device = store.create(req.body || {})
+    log('device_added', { deviceId: device.id, deviceName: device.name })
     res.status(201).json(device)
   }))
 
   router.put('/:id', wrap(async (req, res) => {
     const device = store.update(req.params.id, req.body || {})
+    log('device_updated', { deviceId: device.id, deviceName: device.name })
     res.json(device)
   }))
 
   router.delete('/:id', wrap(async (req, res) => {
+    const device = store.getByIdFull(req.params.id)
     store.remove(req.params.id)
+    log('device_deleted', { deviceId: device.id, deviceName: device?.name })
     res.json({ ok: true })
   }))
 

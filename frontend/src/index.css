@@ -933,6 +933,74 @@ input::placeholder { color: #94a3b8; }
 .progress-bar.dark { background: var(--sidebar-bg); }
 .progress-bar.green { background: var(--green); }
 
+/* ============ Activity Page ============ */
+.activity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 0;
+}
+.activity-head h2 { font-size: 16px; letter-spacing: -.01em; }
+.activity-total {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--panel-2);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.activity-table th:nth-child(1),
+.activity-table td:nth-child(1) { width: 170px; }
+.activity-table th:nth-child(2),
+.activity-table td:nth-child(2) { width: 150px; }
+.activity-table th:nth-child(3),
+.activity-table td:nth-child(3) { width: 150px; }
+.activity-time {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.activity-detail {
+  color: var(--text);
+  font-size: 12.5px;
+  white-space: normal !important;
+  word-break: break-word;
+}
+.act-badge {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.act-badge.ok { background: #dcfce7; color: #15803d; }
+.act-badge.danger { background: #fee2e2; color: #b91c1c; }
+.act-badge.info { background: #e0e7ff; color: #4338ca; }
+.act-badge.warn { background: #fef9c3; color: #854d0e; }
+.act-badge.neutral { background: #f1f5f9; color: var(--muted); }
+.activity-foot {
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ============ Status Sparkline ============ */
+.status-sparkline {
+  width: 96px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--panel-2);
+}
+.status-sparkline canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* ============ Terminal Page ============ */
 .terminal-page {
   flex: 1;

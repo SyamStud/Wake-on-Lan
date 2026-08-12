@@ -2,7 +2,7 @@ import React from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { useUi } from '../contexts/UiContext.jsx'
-import { DashGridIcon, ListIcon, LogoutIcon, PowerIcon, WifiIcon } from '../icons.jsx'
+import { DashGridIcon, HistoryIcon, ListIcon, LogoutIcon, PowerIcon, WifiIcon } from '../icons.jsx'
 
 export default function Layout({ onLogout }) {
   const navigate = useNavigate()
@@ -41,6 +41,10 @@ export default function Layout({ onLogout }) {
           <NavLink to="/scan" className={navClass} title="Scan" aria-label="Scan">
             <WifiIcon />
             <span className="nav-label">Scan</span>
+          </NavLink>
+          <NavLink to="/activity" className={navClass} title="Aktivitas" aria-label="Aktivitas">
+            <HistoryIcon />
+            <span className="nav-label">Aktivitas</span>
           </NavLink>
         </nav>
         <div className="sidebar-footer">

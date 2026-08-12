@@ -7,6 +7,8 @@ import { db } from './db.js'
 import { createApp, ensurePasswordHash } from './app.js'
 import { cleanupSessions } from './auth.js'
 import { startScheduler } from './scheduler.js'
+import { startStatusMonitor } from './status-monitor.js'
+import { createActivityLog } from './activity.js'
 import { attachTerminalServer } from './terminal.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -29,11 +31,21 @@ loadEnv()
 const PORT = Number(process.env.PORT) || 3000
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 
-const { app, store, actions, auth } = createApp({ sessionSecret: SESSION_SECRET })
+const activity = createActivityLog(db)
+const { app, store, actions, auth } = createApp({
+  sessionSecret: SESSION_SECRET,
+  log: activity.log,
+  activity,
+})
 await ensurePasswordHash(app, process.env.APP_PASSWORD)
 
 const cleanupTimer = setInterval(cleanupSessions, 60 * 60 * 1000)
 const stopScheduler = startScheduler({ store, actions })
+const stopStatusMonitor = startStatusMonitor({ store, actions, log: activity.log }).stop
+const cleanupDataTimer = setInterval(() => {
+  activity.cleanup()
+  store.cleanupStatusHistory()
+}, 24 * 60 * 60 * 1000)
 
 const server = app.listen(PORT, () => {
   console.log(`Wake on LAN server berjalan di http://localhost:${PORT}`)
@@ -46,7 +58,12 @@ const server = app.listen(PORT, () => {
   }
 })
 
-attachTerminalServer({ server, store, authenticateRequest: auth.authenticateRequest })
+attachTerminalServer({
+  server,
+  store,
+  authenticateRequest: auth.authenticateRequest,
+  log: activity.log,
+})
 
 let shuttingDown = false
 function shutdown(signal) {
@@ -54,7 +71,9 @@ function shutdown(signal) {
   shuttingDown = true
   console.log(`\n[server] ${signal} diterima, menutup dengan bersih...`)
   clearInterval(cleanupTimer)
+  clearInterval(cleanupDataTimer)
   stopScheduler()
+  stopStatusMonitor()
   server.close(() => {
     db.close()
     process.exit(0)

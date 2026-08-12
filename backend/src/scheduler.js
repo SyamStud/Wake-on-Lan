@@ -40,14 +40,14 @@ export function startScheduler({ store, actions }) {
       const stamp = now.toISOString()
       if (desired) {
         try {
-          await actions.wake(device)
+          await actions.wake(device, { scheduled: true })
           console.log(`[jadwal] ${stamp} Nyalakan otomatis: ${device.name} (${device.mac})`)
         } catch (err) {
           console.error(`[jadwal] ${stamp} Gagal nyalakan ${device.name}: ${err.message}`)
         }
       } else {
         try {
-          await actions.shutdown(device)
+          await actions.shutdown(device, { scheduled: true })
           console.log(`[jadwal] ${stamp} Matikan otomatis: ${device.name} (${device.ssh_user}@${device.ssh_host})`)
         } catch (err) {
           console.error(`[jadwal] ${stamp} Gagal matikan ${device.name}: ${err.message}`)

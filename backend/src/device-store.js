@@ -78,6 +78,9 @@ export function createDeviceStore(db) {
   const remove = db.prepare('DELETE FROM devices WHERE id = ?')
   const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?')
   const setSettingStmt = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
+  const insertStatus = db.prepare('INSERT INTO status_history (device_id, online) VALUES (@device_id, @online)')
+  const selectStatus = db.prepare(`SELECT ts, online FROM status_history WHERE device_id = ? AND ts >= datetime('now', ?) ORDER BY ts ASC`)
+  const cleanupStatus = db.prepare(`DELETE FROM status_history WHERE ts < datetime('now', ?)`)
 
   function getSetting(key) {
     const row = getSettingStmt.get(key)
@@ -170,6 +173,33 @@ export function createDeviceStore(db) {
 
     saveScanCache(found, subnet, broadcast) {
       setSetting('scan_cache', JSON.stringify({ subnet, broadcast, found, at: Date.now() }))
+    },
+
+    recordStatus(deviceId, online) {
+      insertStatus.run({ device_id: deviceId, online: online ? 1 : 0 })
+    },
+
+    getStatusHistory(deviceId, hours) {
+      const rows = selectStatus.all(deviceId, `-${hours} hours`)
+      if (rows.length <= 3000) {
+        return rows.map((r) => ({ ts: r.ts, online: !!r.online }))
+      }
+      const buckets = new Map()
+      for (const r of rows) {
+        const hour = r.ts.slice(0, 13) + ':00:00'
+        const b = buckets.get(hour) || { total: 0, on: 0 }
+        b.total++
+        if (r.online) b.on++
+        buckets.set(hour, b)
+      }
+      return [...buckets].map(([ts, b]) => ({
+        ts,
+        online_pct: Math.round((b.on / b.total) * 100),
+      }))
+    },
+
+    cleanupStatusHistory() {
+      cleanupStatus.run('-30 days')
     },
   }
 }

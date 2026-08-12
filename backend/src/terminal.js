@@ -5,7 +5,7 @@ import { Client } from 'ssh2'
 const MAX_SESSIONS = 4
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000
 
-export function attachTerminalServer({ server, store, authenticateRequest, clientClass = Client }) {
+export function attachTerminalServer({ server, store, authenticateRequest, clientClass = Client, log = () => {} }) {
   const wss = new WebSocketServer({ noServer: true })
   let active = 0
 
@@ -53,6 +53,8 @@ export function attachTerminalServer({ server, store, authenticateRequest, clien
       try { conn?.end() } catch {}
       try { conn?.destroy() } catch {}
     }
+
+    log('terminal_open', { deviceId: device.id, deviceName: device.name, detail: `${device.ssh_user}@${device.ssh_host}` })
 
     const config = {
       host: device.ssh_host,
@@ -131,6 +133,7 @@ export function attachTerminalServer({ server, store, authenticateRequest, clien
 
     ws.on('close', () => {
       active = Math.max(0, active - 1)
+      log('terminal_close', { deviceId: device.id, deviceName: device.name })
       cleanup()
     })
     ws.on('error', () => {})

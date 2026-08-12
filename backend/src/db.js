@@ -29,6 +29,22 @@ export function initSchema(db) {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ts TEXT NOT NULL DEFAULT (datetime('now')),
+      type TEXT NOT NULL,
+      device_id INTEGER,
+      device_name TEXT,
+      detail TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS status_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      device_id INTEGER NOT NULL,
+      online INTEGER NOT NULL,
+      ts TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `)
 
   const cols = db.prepare(`PRAGMA table_info(devices)`).all().map(c => c.name)

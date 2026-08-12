@@ -10,6 +10,7 @@ import Devices from './pages/Devices.jsx'
 import Login from './pages/Login.jsx'
 import Scan from './pages/Scan.jsx'
 import TerminalPage from './pages/Terminal.jsx'
+import Activity from './pages/Activity.jsx'
 
 function RequireAuth({ authed }) {
   if (!authed) return <Navigate to="/login" replace />
@@ -39,6 +40,7 @@ export default function App() {
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/devices" element={<Devices />} />
                   <Route path="/scan" element={<Scan />} />
+                  <Route path="/activity" element={<Activity />} />
                   <Route path="/terminal/:id" element={<TerminalPage />} />
                 </Route>
               </Route>

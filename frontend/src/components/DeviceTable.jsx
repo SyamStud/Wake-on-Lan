@@ -4,6 +4,7 @@ import { useToast } from '../contexts/ToastContext.jsx'
 import { useUi } from '../contexts/UiContext.jsx'
 import { EditSmallIcon, SshIcon } from '../icons.jsx'
 import DeviceMenu from './DeviceMenu.jsx'
+import StatusSparkline from './StatusSparkline.jsx'
 
 export function Badge({ online }) {
   if (online === true) return <span className="pill online"><i></i>Online</span>
@@ -170,6 +171,7 @@ export default function DeviceTable({ mode, devices: propDevices }) {
               </button>
             </div>
             <div className="device-network">{d.broadcast}</div>
+            <StatusSparkline deviceId={d.id} />
             <div className="device-status">
               <Badge online={statuses[d.id]} />
             </div>
