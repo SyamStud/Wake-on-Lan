@@ -35,10 +35,13 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Verify no secrets in source
+      - name: Verify no secrets in committed source
         run: |
-          if grep -rIl --exclude-dir=node_modules --exclude-dir=.git -E 'SESSION_SECRET=[0-9a-f]{32,}|ssh_password' .; then
-            echo "::error::Ditemukan secret di dalam file yang ter-commit"
-            exit 1
+          FAILED=0
+          if git ls-files -z | grep -zv '^\.github/workflows/ci\.yml$' | xargs -0 grep -InP '-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----|SESSION_SECRET=[0-9a-fA-F]{32,}|APP_PASSWORD=(?!ganti-dengan)|serverstb' 2>/dev/null; then
+            echo "::error::Ditemukan secret di file yang ter-commit"
+            FAILED=1
+          else
+            echo "OK: tidak ada secret di file yang ter-commit"
           fi
-          echo "OK: tidak ada secret"
+          exit $FAILED
