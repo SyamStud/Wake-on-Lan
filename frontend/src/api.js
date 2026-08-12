@@ -5,7 +5,10 @@ export async function api(path, options = {}) {
   })
   const body = await res.json().catch(() => ({}))
   if (!res.ok) {
-    throw new Error(body.error || `Gagal (${res.status})`)
+    const err = new Error(body.error || `Gagal (${res.status})`)
+    err.status = res.status
+    if (body.output) err.output = body.output
+    throw err
   }
   return body
 }

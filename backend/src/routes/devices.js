@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { ValidationError, NotFoundError } from '../device-store.js'
+import { setupVncOnTarget } from '../remote-setup.js'
 
 const wrap = (fn) => async (req, res) => {
   try {
@@ -49,6 +50,21 @@ export default function createDevicesRouter({ store, actions, log = () => {} }) 
     store.remove(req.params.id)
     log('device_deleted', { deviceId: device.id, deviceName: device?.name })
     res.json({ ok: true })
+  }))
+
+  router.post('/:id/remote-setup', wrap(async (req, res) => {
+    const device = store.getByIdFull(req.params.id)
+    if (!device) return res.status(404).json({ error: 'Device tidak ditemukan' })
+    const result = await setupVncOnTarget(device)
+    log('remote_setup', {
+      deviceId: device.id,
+      deviceName: device.name,
+      detail: result.ok ? 'VNC berhasil diaktifkan' : 'Setup VNC gagal',
+    })
+    if (!result.ok) {
+      return res.status(500).json({ error: 'Setup VNC gagal', output: result.output })
+    }
+    res.json({ ok: true, output: result.output })
   }))
 
   router.post('/:id/wake', wrap(async (req, res) => {

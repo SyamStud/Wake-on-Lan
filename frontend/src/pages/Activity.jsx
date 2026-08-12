@@ -19,6 +19,7 @@ const TYPE_META = {
   terminal_close: { label: 'Terminal Ditutup', group: 'neutral' },
   remote_open: { label: 'Remote Dibuka', group: 'info' },
   remote_close: { label: 'Remote Ditutup', group: 'neutral' },
+  remote_setup: { label: 'Setup Remote', group: 'info' },
   status_online: { label: 'Device Online', group: 'ok' },
   status_offline: { label: 'Device Offline', group: 'danger' },
 }

@@ -16,7 +16,7 @@ A self-hosted web app to **power on PCs remotely via Wake-on-LAN** magic packets
 - **API key**: automation access without browser login (`Authorization: Bearer <key>`)
 - **Dark mode**: toggleable theme, persisted per browser
 - **Web terminal**: interactive SSH shell for any device with SSH configured (xterm.js + WebSocket)
-- **Remote desktop**: full VNC desktop session in the browser (noVNC + SSH tunnel) for devices running a VNC server
+- **Remote desktop**: full VNC desktop session in the browser (noVNC + SSH tunnel) for devices running a VNC server — with a one-click **"Aktifkan Remote"** button that installs and configures x11vnc on the target automatically via SSH
 - Scheduled power on/off per device (timezone-aware, e.g. `TZ=Asia/Jakarta`)
 - LAN scanner with cached results (best run on the host, see [Docker notes](#docker))
 - Indonesian UI, no frontend framework required beyond React + Vite
@@ -148,21 +148,21 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 
 The web app tunnels to a VNC server on the target through SSH — no open firewall ports needed, only SSH access (which the shutdown feature already requires).
 
-1. Install and start a VNC server on the target:
+**Cara paling mudah**: Devices → ⋮ → **Remote** → klik **"Aktifkan Remote"**. Aplikasi otomatis:
+1. SSH ke target, install `x11vnc` (apt/apk) jika belum ada
+2. Buat & nyalakan service `x11vnc` (systemd), atau jalankan langsung jika bukan systemd
+3. Verifikasi port 5900, lalu browser langsung terhubung
 
-   ```bash
-   sudo apt install x11vnc
-   x11vnc -display :0 -auth guess -forever -shared -passwd 'password-vnc'
-   ```
+Setelan manual (opsional):
 
-   (or `-nopw` for no password on a trusted LAN; the browser will ask for the VNC password if set)
+```bash
+sudo apt install x11vnc
+x11vnc -display :0 -auth guess -forever -shared -passwd 'password-vnc'
+```
 
-2. In the app: Devices → ⋮ → **Remote**. The desktop appears inside the browser.
-3. If the target SSH server has TCP forwarding disabled, enable it in `/etc/ssh/sshd_config` (it is enabled by default on most distros):
+(or `-nopw` for no password on a trusted LAN; the browser will ask for the VNC password if set)
 
-   ```
-   AllowTcpForwarding yes
-   ```
+Catatan: jika target tidak punya display aktif (headless), "Aktifkan Remote" akan gagal — butuh sesi grafis (mis. Xvfb) atau desktop yang berjalan. Jika SSH target menonaktifkan forwarding (`AllowTcpForwarding no`), aktifkan di `/etc/ssh/sshd_config`.
 
 ## Adding a Device
 
@@ -192,6 +192,7 @@ The web app tunnels to a VNC server on the target through SSH — no open firewa
 | DELETE | `/api/devices/:id` | Delete device |
 | POST | `/api/devices/:id/wake` | Send magic packet |
 | POST | `/api/devices/:id/shutdown` | Shutdown via SSH |
+| POST | `/api/devices/:id/remote-setup` | Auto-install & start VNC on the target via SSH |
 | GET | `/api/devices/:id/status` | Online/offline status |
 | GET | `/api/devices/:id/history?hours=24` | Status samples for uptime chart (auto-aggregates for long ranges) |
 | GET | `/api/activity?limit=&offset=` | Activity log (newest first) |

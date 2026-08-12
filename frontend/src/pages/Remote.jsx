@@ -23,6 +23,8 @@ export default function Remote() {
   const [status, setStatus] = useState('connecting')
   const [password, setPassword] = useState('')
   const [needPassword, setNeedPassword] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const [setup, setSetup] = useState({ running: false, output: '' })
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -77,7 +79,24 @@ export default function Remote() {
       } catch {}
       rfbRef.current = null
     }
-  }, [id, port])
+  }, [id, port, attempt])
+
+  const runSetup = async () => {
+    setSetup({ running: true, output: '' })
+    try {
+      const res = await api(`/api/devices/${id}/remote-setup`, { method: 'POST' })
+      setSetup({ running: false, output: res.output || '' })
+      if (res.ok) {
+        toast('VNC berhasil diaktifkan — menghubungkan…')
+        setPassword('')
+        setAttempt((a) => a + 1)
+      }
+    } catch (err) {
+      const output = err.output || ''
+      setSetup({ running: false, output })
+      toast(err.message, 'error')
+    }
+  }
 
   const submitPassword = (e) => {
     e.preventDefault()
@@ -111,6 +130,11 @@ export default function Remote() {
             Ctrl+Alt+Del
           </button>
         )}
+        {status !== 'connected' && (
+          <button className="btn-save" onClick={runSetup} disabled={setup.running}>
+            {setup.running ? 'Menyiapkan…' : 'Aktifkan Remote'}
+          </button>
+        )}
         <button className="btn-cancel terminal-close" onClick={() => navigate('/devices')}>
           Tutup
         </button>
@@ -130,6 +154,13 @@ export default function Remote() {
             Masuk
           </button>
         </form>
+      )}
+
+      {setup.output && (
+        <details className="remote-output">
+          <summary>Lihat log setup ({setup.running ? 'berjalan…' : 'selesai'})</summary>
+          <pre>{setup.output}</pre>
+        </details>
       )}
 
       <div className="remote-screen" ref={screenRef}></div>
