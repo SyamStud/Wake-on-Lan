@@ -7,6 +7,7 @@ import { db } from './db.js'
 import { createApp, ensurePasswordHash } from './app.js'
 import { cleanupSessions } from './auth.js'
 import { startScheduler } from './scheduler.js'
+import { attachTerminalServer } from './terminal.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -28,7 +29,7 @@ loadEnv()
 const PORT = Number(process.env.PORT) || 3000
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 
-const { app, store, actions } = createApp({ sessionSecret: SESSION_SECRET })
+const { app, store, actions, auth } = createApp({ sessionSecret: SESSION_SECRET })
 await ensurePasswordHash(app, process.env.APP_PASSWORD)
 
 const cleanupTimer = setInterval(cleanupSessions, 60 * 60 * 1000)
@@ -44,6 +45,8 @@ const server = app.listen(PORT, () => {
     }
   }
 })
+
+attachTerminalServer({ server, store, authenticateRequest: auth.authenticateRequest })
 
 let shuttingDown = false
 function shutdown(signal) {

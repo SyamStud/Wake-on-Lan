@@ -26,21 +26,26 @@ export function initAuth(app, { secret }) {
     return crypto.timingSafeEqual(a, b) ? value : null
   }
 
-  app.use((req, res, next) => {
+  const readSession = (req) => {
     const cookie = req.headers.cookie
-    if (!cookie) return next()
+    if (!cookie) return null
     const match = cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith(`${SESSION_COOKIE}=`))
-    if (!match) return next()
+    if (!match) return null
     const [, raw = ''] = match.split('=')
     const [token, signature] = raw.split('.')
-    if (!token || !signature) return next()
+    if (!token || !signature) return null
     const unsigned = unsign(token, signature)
-    if (!unsigned) return next()
+    if (!unsigned) return null
     const session = sessions.get(unsigned)
     if (session && session.expiresAt > Date.now()) {
       session.expiresAt = Date.now() + SESSION_TTL_MS
-      req.session = session
+      return session
     }
+    return null
+  }
+
+  app.use((req, res, next) => {
+    req.session = readSession(req)
     next()
   })
 
@@ -88,6 +93,7 @@ export function initAuth(app, { secret }) {
       res.status(401).json({ error: 'Belum login' })
     },
     isAuthed: (req) => !!req.session,
+    authenticateRequest: readSession,
   }
 }
 

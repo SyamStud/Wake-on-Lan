@@ -933,6 +933,73 @@ input::placeholder { color: #94a3b8; }
 .progress-bar.dark { background: var(--sidebar-bg); }
 .progress-bar.green { background: var(--green); }
 
+/* ============ Terminal Page ============ */
+.terminal-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 32px 32px;
+}
+
+.terminal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.terminal-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.terminal-title em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sidebar-active);
+  background: #e0e7ff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: 1px;
+}
+
+.terminal-spacer { flex: 1; }
+
+.terminal-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.terminal-status.connecting { background: #fef9c3; color: #854d0e; }
+.terminal-status.connected { background: #dcfce7; color: #15803d; }
+.terminal-status.error { background: #fee2e2; color: #b91c1c; }
+.terminal-status.closed { background: #f1f5f9; color: var(--muted); }
+
+.terminal-close {
+  padding: 8px 20px;
+}
+
+.terminal-wrap {
+  flex: 1;
+  min-height: 0;
+  background: #16161f;
+  border-radius: 16px;
+  padding: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.terminal-wrap .xterm {
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .terminal-page { padding: 18px 16px 24px; }
+}
+
 /* ============ Scan Page ============ */
 .scan-page {
   flex: 1;

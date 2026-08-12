@@ -58,7 +58,7 @@ export function createApp({ sessionSecret }) {
     res.status(500).json({ error: 'Terjadi kesalahan server' })
   })
 
-  return { app, store, actions }
+  return { app, store, actions, auth }
 }
 
 export async function ensurePasswordHash(app, envPassword) {

@@ -11,6 +11,7 @@ A self-hosted web app to **power on PCs remotely via Wake-on-LAN** magic packets
 - Wake: UDP broadcast magic packet (default port 9, 3 retries)
 - Shutdown: SSH to the target, then `sudo shutdown -h now`
 - Online/offline status via TCP probe to the SSH port (refreshes every 15s)
+- **Web terminal**: interactive SSH shell for any device with SSH configured (xterm.js + WebSocket)
 - Scheduled power on/off per device (timezone-aware, e.g. `TZ=Asia/Jakarta`)
 - LAN scanner with cached results (best run on the host, see [Docker notes](#docker))
 - Indonesian UI, no frontend framework required beyond React + Vite
@@ -167,6 +168,7 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 | POST | `/api/devices/:id/wake` | Send magic packet |
 | POST | `/api/devices/:id/shutdown` | Shutdown via SSH |
 | GET | `/api/devices/:id/status` | Online/offline status |
+| WS | `/api/terminal?deviceId=:id` | Interactive SSH terminal (requires session cookie) |
 | GET | `/api/devices/wake-count` | Total wake actions |
 | GET | `/api/scan/cache` | Cached scan results |
 | POST | `/api/scan/start` | Start a LAN scan |

@@ -1,12 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { DotsIcon, EditIcon, PowerIcon, TrashIcon, ZapIcon } from '../icons.jsx'
+import { useNavigate } from 'react-router-dom'
+import { DotsIcon, EditIcon, PowerIcon, TerminalIcon, TrashIcon, ZapIcon } from '../icons.jsx'
 
 export default function DeviceMenu({ device, onWake, onShutdown, onEdit, onDelete }) {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
   const menuRef = useRef(null)
   const btnRectRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!open) return
@@ -64,9 +66,17 @@ export default function DeviceMenu({ device, onWake, onShutdown, onEdit, onDelet
               <ZapIcon /> <span>Wake</span>
             </button>
             {device.ssh_host && device.ssh_user && (
-              <button className="menu-item shutdown-item" onClick={act(onShutdown)}>
-                <PowerIcon /> <span>Shutdown</span>
-              </button>
+              <>
+                <button className="menu-item shutdown-item" onClick={act(onShutdown)}>
+                  <PowerIcon /> <span>Shutdown</span>
+                </button>
+                <button
+                  className="menu-item"
+                  onClick={act(() => navigate(`/terminal/${device.id}`))}
+                >
+                  <TerminalIcon /> <span>Terminal</span>
+                </button>
+              </>
             )}
             <div className="menu-divider"></div>
             <button className="menu-item" onClick={act(onEdit)}>
