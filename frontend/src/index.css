@@ -1001,6 +1001,59 @@ input::placeholder { color: #94a3b8; }
   display: block;
 }
 
+/* ============ Remote Page ============ */
+.remote-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 32px 32px;
+}
+.remote-screen {
+  flex: 1;
+  min-height: 0;
+  background: #16161f;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+.remote-screen > div {
+  width: 100%;
+  height: 100%;
+}
+.remote-screen canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+.remote-password {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-sm);
+  max-width: 420px;
+}
+.remote-password svg {
+  width: 20px;
+  height: 20px;
+  color: var(--sidebar-active);
+  flex-shrink: 0;
+}
+.remote-password input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+}
+
+@media (max-width: 900px) {
+  .remote-page { padding: 18px 16px 24px; }
+}
+
 /* ============ Terminal Page ============ */
 .terminal-page {
   flex: 1;

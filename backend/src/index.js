@@ -10,6 +10,7 @@ import { startScheduler } from './scheduler.js'
 import { startStatusMonitor } from './status-monitor.js'
 import { createActivityLog } from './activity.js'
 import { attachTerminalServer } from './terminal.js'
+import { attachRemoteServer } from './remote.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -59,6 +60,13 @@ const server = app.listen(PORT, () => {
 })
 
 attachTerminalServer({
+  server,
+  store,
+  authenticateRequest: auth.authenticateRequest,
+  log: activity.log,
+})
+
+attachRemoteServer({
   server,
   store,
   authenticateRequest: auth.authenticateRequest,

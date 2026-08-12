@@ -10,6 +10,7 @@ import Devices from './pages/Devices.jsx'
 import Login from './pages/Login.jsx'
 import Scan from './pages/Scan.jsx'
 import TerminalPage from './pages/Terminal.jsx'
+import Remote from './pages/Remote.jsx'
 import Activity from './pages/Activity.jsx'
 import Settings from './pages/Settings.jsx'
 
@@ -44,6 +45,7 @@ export default function App() {
                   <Route path="/activity" element={<Activity />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/terminal/:id" element={<TerminalPage />} />
+                  <Route path="/remote/:id" element={<Remote />} />
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />

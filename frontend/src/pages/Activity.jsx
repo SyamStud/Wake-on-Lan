@@ -17,6 +17,8 @@ const TYPE_META = {
   device_deleted: { label: 'Device Dihapus', group: 'danger' },
   terminal_open: { label: 'Terminal Dibuka', group: 'info' },
   terminal_close: { label: 'Terminal Ditutup', group: 'neutral' },
+  remote_open: { label: 'Remote Dibuka', group: 'info' },
+  remote_close: { label: 'Remote Ditutup', group: 'neutral' },
   status_online: { label: 'Device Online', group: 'ok' },
   status_offline: { label: 'Device Offline', group: 'danger' },
 }

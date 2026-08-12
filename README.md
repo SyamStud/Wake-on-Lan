@@ -16,6 +16,7 @@ A self-hosted web app to **power on PCs remotely via Wake-on-LAN** magic packets
 - **API key**: automation access without browser login (`Authorization: Bearer <key>`)
 - **Dark mode**: toggleable theme, persisted per browser
 - **Web terminal**: interactive SSH shell for any device with SSH configured (xterm.js + WebSocket)
+- **Remote desktop**: full VNC desktop session in the browser (noVNC + SSH tunnel) for devices running a VNC server
 - Scheduled power on/off per device (timezone-aware, e.g. `TZ=Asia/Jakarta`)
 - LAN scanner with cached results (best run on the host, see [Docker notes](#docker))
 - Indonesian UI, no frontend framework required beyond React + Vite
@@ -143,6 +144,26 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 
    To persist it, set `WakeOnLan g` in `/etc/network/interfaces`, netplan, or NetworkManager.
 
+### Remote Desktop (Linux target)
+
+The web app tunnels to a VNC server on the target through SSH — no open firewall ports needed, only SSH access (which the shutdown feature already requires).
+
+1. Install and start a VNC server on the target:
+
+   ```bash
+   sudo apt install x11vnc
+   x11vnc -display :0 -auth guess -forever -shared -passwd 'password-vnc'
+   ```
+
+   (or `-nopw` for no password on a trusted LAN; the browser will ask for the VNC password if set)
+
+2. In the app: Devices → ⋮ → **Remote**. The desktop appears inside the browser.
+3. If the target SSH server has TCP forwarding disabled, enable it in `/etc/ssh/sshd_config` (it is enabled by default on most distros):
+
+   ```
+   AllowTcpForwarding yes
+   ```
+
 ## Adding a Device
 
 | Field | Description |
@@ -178,6 +199,7 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 | POST | `/api/settings/api-key` | Generate a new API key (revokes the old one) |
 | DELETE | `/api/settings/api-key` | Revoke the API key |
 | WS | `/api/terminal?deviceId=:id` | Interactive SSH terminal (requires session cookie) |
+| WS | `/api/remote?deviceId=:id&port=5900` | TCP tunnel through SSH for remote desktop / any service |
 | GET | `/api/devices/wake-count` | Total wake actions |
 | GET | `/api/scan/cache` | Cached scan results |
 | POST | `/api/scan/start` | Start a LAN scan |
