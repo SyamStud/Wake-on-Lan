@@ -184,6 +184,26 @@ export const ArrowLeftIcon = (p) => svg(
   p,
 )
 
+export const RefreshIcon = (p) => svg(
+  <>
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+    <path d="M21 3v5h-5" />
+    <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+    <path d="M3 21v-5h5" />
+  </>,
+  p,
+)
+
+export const PlayIcon = (p) => svg(
+  <polygon points="6 3 20 12 6 21 6 3" />,
+  p,
+)
+
+export const StopIcon = (p) => svg(
+  <rect x="5" y="5" width="14" height="14" rx="2" />,
+  p,
+)
+
 export const HistoryIcon = (p) => svg(
   <>
     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />

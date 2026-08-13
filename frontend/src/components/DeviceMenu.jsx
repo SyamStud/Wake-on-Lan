@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { DotsIcon, EditIcon, MonitorIcon, PowerIcon, TerminalIcon, TrashIcon, ZapIcon } from '../icons.jsx'
+import { DotsIcon, EditIcon, MonitorIcon, PowerIcon, TerminalIcon, TrashIcon, ZapIcon, ContainerIcon } from '../icons.jsx'
 
 export default function DeviceMenu({ device, onWake, onShutdown, onEdit, onDelete }) {
   const [open, setOpen] = useState(false)
@@ -81,6 +81,12 @@ export default function DeviceMenu({ device, onWake, onShutdown, onEdit, onDelet
                   onClick={act(() => navigate(`/remote/${device.id}?port=5900`))}
                 >
                   <MonitorIcon /> <span>Remote</span>
+                </button>
+                <button
+                  className="menu-item"
+                  onClick={act(() => navigate(`/containers/${device.id}`))}
+                >
+                  <ContainerIcon /> <span>Container</span>
                 </button>
               </>
             )}

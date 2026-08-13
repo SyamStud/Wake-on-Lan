@@ -11,6 +11,7 @@ import Login from './pages/Login.jsx'
 import Scan from './pages/Scan.jsx'
 import TerminalPage from './pages/Terminal.jsx'
 import Remote from './pages/Remote.jsx'
+import Containers from './pages/Containers.jsx'
 import Activity from './pages/Activity.jsx'
 import Settings from './pages/Settings.jsx'
 
@@ -46,6 +47,7 @@ export default function App() {
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/terminal/:id" element={<TerminalPage />} />
                   <Route path="/remote/:id" element={<Remote />} />
+                  <Route path="/containers/:id" element={<Containers />} />
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
