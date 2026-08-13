@@ -58,8 +58,16 @@ if listening; then
   echo "VNC_READY"
 else
   echo "VNC_FAIL"
+  echo "--- x11vnc.log:"
   tail -15 /var/log/x11vnc.log 2>/dev/null
+  echo "--- journalctl:"
   command -v journalctl >/dev/null 2>&1 && journalctl -u x11vnc -n 10 --no-pager 2>/dev/null
+  echo "--- diag (X11 sockets & binary):"
+  ls /tmp/.X11-unix/ 2>/dev/null
+  command -v Xvfb || echo "Xvfb TIDAK ADA"
+  command -v x11vnc || echo "x11vnc TIDAK ADA"
+  echo "--- x11vnc foreground 4 detik:"
+  timeout 4 x11vnc -display :1 -shared -nopw -noxdamage -nowf -noscr -nodpms 2>&1 | head -12
 fi
 `
 }
