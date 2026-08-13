@@ -23,6 +23,7 @@ export default function Scan() {
   const [statusText, setStatusText] = useState('Memulai scan...')
   const [progress, setProgress] = useState(0)
   const [cacheNote, setCacheNote] = useState('')
+  const [subnet, setSubnet] = useState('')
   const scanIdRef = useRef(null)
   const pollTimerRef = useRef(null)
 
@@ -74,7 +75,8 @@ export default function Scan() {
 
   const startScan = async () => {
     try {
-      const res = await api('/api/scan/start', { method: 'POST' })
+      const q = subnet.trim() ? `?subnet=${encodeURIComponent(subnet.trim())}` : ''
+      const res = await api(`/api/scan/start${q}`, { method: 'POST' })
       scanIdRef.current = res.scanId
       setFound([])
       setCacheNote('')
@@ -135,6 +137,13 @@ export default function Scan() {
           <h2 style={{ marginBottom: 10 }}>Network Scan</h2>
         </div>
         <div className="scan-actions">
+          <input
+            className="scan-subnet-input"
+            placeholder="Subnet (cth: 192.168.1.0/24) — kosongkan = auto"
+            value={subnet}
+            onChange={(e) => setSubnet(e.target.value)}
+            disabled={running}
+          />
           <button id="scan-start" className="btn-add-device" onClick={startScan}>
             Scan
           </button>

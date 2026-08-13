@@ -1,5 +1,15 @@
 import { Router } from 'express'
-import { getScanRange, createScanRegistry } from '../scan-job.js'
+import { getScanRange, createScanRegistry, rangeHosts, computeBroadcast } from '../scan-job.js'
+
+function parseSubnet(input) {
+  const m = String(input || '').match(/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,2})$/)
+  if (!m) return null
+  const ip = m[1]
+  const prefix = Number(m[2])
+  if (ip.split('.').some((o) => Number(o) > 255)) return null
+  if (prefix < 8 || prefix > 30) return null
+  return { address: ip, prefix, broadcast: computeBroadcast(ip, prefix), ips: rangeHosts(ip, prefix) }
+}
 
 export default function createScanRouter({ store }) {
   const router = Router()
@@ -14,13 +24,25 @@ export default function createScanRouter({ store }) {
   })
 
   router.post('/start', (req, res) => {
+    const subnetParam = req.query.subnet
     let range
-    try {
-      range = getScanRange()
-    } catch (err) {
-      return res.status(400).json({ error: err.message })
+    if (subnetParam) {
+      try {
+        range = parseSubnet(subnetParam)
+      } catch (err) {
+        return res.status(400).json({ error: err.message })
+      }
+      if (!range) {
+        return res.status(400).json({ error: 'Subnet tidak valid (contoh: 192.168.1.0/24)' })
+      }
+    } else {
+      try {
+        range = getScanRange()
+      } catch (err) {
+        return res.status(400).json({ error: err.message })
+      }
+      if (!range) return res.status(400).json({ error: 'Tidak ada interface jaringan yang cocok' })
     }
-    if (!range) return res.status(400).json({ error: 'Tidak ada interface jaringan yang cocok' })
     const job = registry.start(range)
     res.json({ scanId: job.id, subnet: `${range.address}/${range.prefix}` })
   })
