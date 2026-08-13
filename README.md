@@ -42,7 +42,7 @@ A self-hosted web app to **power on PCs remotely via Wake-on-LAN** magic packets
 ```
 wake-on-lan/
 ├── backend/            # Express server (entry: src/index.js)
-│   ├── src/            # app, routes, device-store, actions, scheduler, scan-job, ssh, wol
+│   ├── src/            # app, routes, device-store, actions, scheduler, scan-job, ssh, wol, containers
 │   ├── test/           # Node test runner suites
 │   └── public/dist/    # Frontend build output (gitignored)
 ├── frontend/           # React + Vite UI
