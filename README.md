@@ -148,8 +148,8 @@ The Windows browser can then open `http://localhost:3000` (WSL2 forwards the por
 
 The web app tunnels to a VNC server on the target through SSH — no open firewall ports needed, only SSH access (which the shutdown feature already requires).
 
-**Cara paling mudah**: Devices → ⋮ → **Remote** → klik **"Aktifkan Remote"**. Aplikasi otomatis:
-1. SSH ke target, install `x11vnc` (apt/apk) jika belum ada
+**Cara paling mudah**: Devices → ⋮ → **Remote** → klik **"Aktifkan Remote"** (PC dengan monitor) atau **"Mode Headless"** (PC tanpa monitor — virtual desktop Xvfb + XFCE). Aplikasi otomatis:
+1. SSH ke target, install `x11vnc` (+ `xvfb`/`xfce4` untuk headless) jika belum ada
 2. Buat & nyalakan service `x11vnc` (systemd), atau jalankan langsung jika bukan systemd
 3. Verifikasi port 5900, lalu browser langsung terhubung
 
@@ -162,7 +162,7 @@ x11vnc -display :0 -auth guess -forever -shared -passwd 'password-vnc'
 
 (or `-nopw` for no password on a trusted LAN; the browser will ask for the VNC password if set)
 
-Catatan: jika target tidak punya display aktif (headless), "Aktifkan Remote" akan gagal — butuh sesi grafis (mis. Xvfb) atau desktop yang berjalan. Jika SSH target menonaktifkan forwarding (`AllowTcpForwarding no`), aktifkan di `/etc/ssh/sshd_config`.
+Catatan: untuk PC **tanpa monitor**, pakai tombol **"Mode Headless"** — aplikasi membuat virtual desktop (Xvfb + XFCE) di display terpisah sehingga selalu ada gambar. Jika SSH target menonaktifkan forwarding (`AllowTcpForwarding no`), aktifkan di `/etc/ssh/sshd_config`.
 
 ## Adding a Device
 

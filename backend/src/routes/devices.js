@@ -55,11 +55,18 @@ export default function createDevicesRouter({ store, actions, log = () => {} }) 
   router.post('/:id/remote-setup', wrap(async (req, res) => {
     const device = store.getByIdFull(req.params.id)
     if (!device) return res.status(404).json({ error: 'Device tidak ditemukan' })
-    const result = await setupVncOnTarget(device)
+    const headless = (req.body || {}).mode === 'headless'
+    const result = await setupVncOnTarget(device, { headless })
     log('remote_setup', {
       deviceId: device.id,
       deviceName: device.name,
-      detail: result.ok ? 'VNC berhasil diaktifkan' : 'Setup VNC gagal',
+      detail: headless
+        ? result.ok
+          ? 'Virtual desktop (headless) berhasil diaktifkan'
+          : 'Setup headless gagal'
+        : result.ok
+          ? 'VNC berhasil diaktifkan'
+          : 'Setup VNC gagal',
     })
     if (!result.ok) {
       return res.status(500).json({ error: 'Setup VNC gagal', output: result.output })

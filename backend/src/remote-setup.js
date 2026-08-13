@@ -1,6 +1,56 @@
 import fs from 'node:fs'
 import { Client } from 'ssh2'
 
+export function buildVncHeadlessScript() {
+  return `#!/bin/bash
+set -u
+install_pkg() {
+  if command -v apt-get >/dev/null 2>&1; then
+    apt-get update -y >/dev/null 2>&1
+    apt-get install -y "$@" >/dev/null 2>&1
+  elif command -v apk >/dev/null 2>&1; then
+    apk add "$@" >/dev/null 2>&1
+  fi
+}
+command -v x11vnc >/dev/null 2>&1 || install_pkg x11vnc
+command -v Xvfb >/dev/null 2>&1 || install_pkg xvfb
+if ! command -v startxfce4 >/dev/null 2>&1; then
+  install_pkg xfce4 xfce4-terminal dbus-x11
+fi
+mkdir -p /etc/systemd/system
+cat > /etc/systemd/system/x11vnc.service <<'EOF'
+[Unit]
+Description=x11vnc virtual desktop (headless)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c 'Xvfb :1 -screen 0 1280x720x24 >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl daemon-reload
+  systemctl enable x11vnc >/dev/null 2>&1
+  systemctl restart x11vnc
+else
+  pkill -f x11vnc 2>/dev/null
+  pkill Xvfb 2>/dev/null
+  sleep 1
+  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
+fi
+sleep 8
+if ss -tln 2>/dev/null | grep -q ':5900' || netstat -tln 2>/dev/null | grep -q ':5900'; then
+  echo "VNC_READY"
+else
+  echo "VNC_FAIL"
+  tail -15 /var/log/x11vnc.log 2>/dev/null
+fi
+`
+}
+
 export function buildVncSetupScript() {
   return `#!/bin/bash
 set -u
@@ -37,12 +87,12 @@ EOF
 else
   pkill -f x11vnc 2>/dev/null
   sleep 1
-  nohup x11vnc -display :0 -auth guess -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1 &
+  setsid x11vnc -display :0 -auth guess -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1 </dev/null &
   sleep 3
   if ! ss -tln 2>/dev/null | grep -q ':5900' && ! netstat -tln 2>/dev/null | grep -q ':5900'; then
     pkill -f x11vnc 2>/dev/null
     sleep 1
-    nohup x11vnc -display :0 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1 &
+    setsid x11vnc -display :0 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1 </dev/null &
     sleep 3
   fi
 fi
@@ -56,7 +106,7 @@ fi
 `
 }
 
-export function setupVncOnTarget(device, clientClass = Client, timeoutMs = 120000) {
+export function setupVncOnTarget(device, { headless = false } = {}, clientClass = Client, timeoutMs = 120000) {
   return new Promise((resolve) => {
     const config = {
       host: device.ssh_host,
@@ -91,7 +141,8 @@ export function setupVncOnTarget(device, clientClass = Client, timeoutMs = 12000
       console.log('[vnc-setup] ssh ready')
       conn.sftp((err, sftp) => {
         if (err) return finish(false)
-        sftp.writeFile('/tmp/wol-vnc-setup.sh', buildVncSetupScript(), (errWrite) => {
+        const script = headless ? buildVncHeadlessScript() : buildVncSetupScript()
+        sftp.writeFile('/tmp/wol-vnc-setup.sh', script, (errWrite) => {
           if (errWrite) return finish(false)
           const pass = (device.ssh_password || '').replace(/'/g, `'\\''`)
           const cmd =
