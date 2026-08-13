@@ -6,19 +6,25 @@ A self-hosted web app to **power on PCs remotely via Wake-on-LAN** magic packets
 
 ## Features
 
-- Password login with signed session cookies (bcrypt + HMAC)
+### Main Features
+
+- **Wake-on-LAN**: power on PCs remotely with a UDP broadcast magic packet (default port 9, 3 retries)
+- **SSH shutdown**: power off PCs over SSH (`sudo shutdown -h now`, passwordless sudo or piped password)
+
+### Additional Features
+
 - Device management: create, edit, delete, duplicate-MAC protection
-- Wake: UDP broadcast magic packet (default port 9, 3 retries)
-- Shutdown: SSH to the target, then `sudo shutdown -h now`
 - Online/offline status via TCP probe to the SSH port (refreshes every 15s)
+- Scheduled power on/off per device (timezone-aware, e.g. `TZ=Asia/Jakarta`)
+- **Docker container management**: list containers on any device via SSH and start / stop / restart them from the web UI
 - **Activity log**: history of wakes, shutdowns, logins, terminal sessions, and status changes
 - **Uptime sparkline**: 24h online/offline chart per device on the dashboard
 - **API key**: automation access without browser login (`Authorization: Bearer <key>`)
 - **Dark mode**: toggleable theme, persisted per browser
 - **Web terminal**: interactive SSH shell for any device with SSH configured (xterm.js + WebSocket)
 - **Remote desktop**: full VNC desktop session in the browser (noVNC + SSH tunnel) for devices running a VNC server — with a one-click **"Aktifkan Remote"** button that installs and configures x11vnc on the target automatically via SSH
-- Scheduled power on/off per device (timezone-aware, e.g. `TZ=Asia/Jakarta`)
 - LAN scanner with cached results (best run on the host, see [Docker notes](#docker))
+- Password login with signed session cookies (bcrypt + HMAC)
 - Indonesian UI, no frontend framework required beyond React + Vite
 
 ## Tech Stack
@@ -192,6 +198,8 @@ Catatan: untuk PC **tanpa monitor**, pakai tombol **"Mode Headless"** — aplika
 | DELETE | `/api/devices/:id` | Delete device |
 | POST | `/api/devices/:id/wake` | Send magic packet |
 | POST | `/api/devices/:id/shutdown` | Shutdown via SSH |
+| GET | `/api/devices/:id/containers` | List Docker containers on the target via SSH |
+| POST | `/api/devices/:id/containers/:name/:action` | `start` / `stop` / `restart` a container via SSH |
 | POST | `/api/devices/:id/remote-setup` | Auto-install & start VNC on the target via SSH |
 | GET | `/api/devices/:id/status` | Online/offline status |
 | GET | `/api/devices/:id/history?hours=24` | Status samples for uptime chart (auto-aggregates for long ranges) |
