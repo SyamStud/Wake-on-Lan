@@ -84,7 +84,7 @@ else
   XPID=$!
   sleep 2
   ls -la /tmp/.X11-unix/X1 2>/dev/null || echo "X1 TIDAK ADA"
-  echo "XAUTHORITY=${XAUTHORITY:-<kosong>}"
+  echo "XAUTHORITY=\${XAUTHORITY:-<kosong>}"
   timeout 3 env -u XAUTHORITY x11vnc -display :1 -shared -nopw 2>&1 | head -6
   kill $XPID 2>/dev/null
   echo "--- x11vnc foreground 4 detik:"
