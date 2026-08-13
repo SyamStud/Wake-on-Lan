@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import RFB from '@novnc/novnc'
+import { api } from '../api.js'
 import { useDevices } from '../contexts/DevicesContext.jsx'
 import { useToast } from '../contexts/ToastContext.jsx'
 import { ArrowLeftIcon, MonitorIcon } from '../icons.jsx'
