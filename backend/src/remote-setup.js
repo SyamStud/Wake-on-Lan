@@ -33,7 +33,7 @@ cleanup_display() {
 
 start_direct() {
   cleanup_display
-  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec env -u XAUTHORITY x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
+  setsid sh -c 'rm -f /tmp/.X1-lock /tmp/.X11-unix/X1; Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec env -u XAUTHORITY x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
   sleep 8
 }
 
@@ -47,7 +47,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec env -u XAUTHORITY x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
+ExecStart=/bin/sh -c 'rm -f /tmp/.X1-lock /tmp/.X11-unix/X1; Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec env -u XAUTHORITY x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
 Restart=always
 
 [Install]
@@ -80,10 +80,11 @@ else
   echo "--- Xvfb foreground 4 detik (display :99):"
   timeout 4 Xvfb :99 -screen 0 1280x720x24 -ac -nolisten tcp 2>&1 | head -12
   echo "--- uji rantai penuh di :1:"
-  Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 &
+  rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
+  Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/tmp/xvfb-diag.log 2>&1 &
   XPID=$!
   sleep 2
-  ls -la /tmp/.X11-unix/X1 2>/dev/null || echo "X1 TIDAK ADA"
+  ls -la /tmp/.X11-unix/X1 2>/dev/null || { echo "X1 TIDAK ADA — error Xvfb:"; cat /tmp/xvfb-diag.log; }
   echo "XAUTHORITY=\${XAUTHORITY:-<kosong>}"
   timeout 3 env -u XAUTHORITY x11vnc -display :1 -shared -nopw 2>&1 | head -6
   kill $XPID 2>/dev/null
