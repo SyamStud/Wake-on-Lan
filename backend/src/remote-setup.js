@@ -24,15 +24,16 @@ listening() {
 
 cleanup_display() {
   command -v systemctl >/dev/null 2>&1 && systemctl stop x11vnc >/dev/null 2>&1
-  pkill -f x11vnc 2>/dev/null
-  pkill -9 Xvfb 2>/dev/null
+  pkill -9 -f x11vnc 2>/dev/null
+  pkill -9 -f 'Xvfb :1' 2>/dev/null
+  pkill -9 -f 'Xvfb' 2>/dev/null
   sleep 1
   rm -f /tmp/.X11-unix/X1 /tmp/.X1-lock
 }
 
 start_direct() {
   cleanup_display
-  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
+  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
   sleep 8
 }
 
@@ -46,7 +47,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
+ExecStart=/bin/sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
 Restart=always
 
 [Install]
@@ -72,6 +73,12 @@ else
   ls /tmp/.X11-unix/ 2>/dev/null
   command -v Xvfb || echo "Xvfb TIDAK ADA"
   command -v x11vnc || echo "x11vnc TIDAK ADA"
+  echo "--- proses X yang masih hidup:"
+  ps aux | grep -E '[X]vfb|[x]11vnc' | head -5
+  echo "--- port 6001:"
+  ss -tln 2>/dev/null | grep 6001 || echo "6001 tidak ada listener"
+  echo "--- Xvfb foreground 4 detik (display :99):"
+  timeout 4 Xvfb :99 -screen 0 1280x720x24 -ac -nolisten tcp 2>&1 | head -12
   echo "--- x11vnc foreground 4 detik:"
   timeout 4 x11vnc -display :1 -shared -nopw -noxdamage -nowf -noscr -nodpms 2>&1 | head -12
 fi
