@@ -133,26 +133,22 @@ export default function Remote() {
             Ctrl+Alt+Del
           </button>
         )}
-        {status !== 'connected' && (
-          <>
-            <button
-              className="btn-save"
-              onClick={() => runSetup('normal')}
-              disabled={setup.running}
-              title="Instal & aktifkan x11vnc di target (untuk PC dengan monitor)"
-            >
-              {setup.running ? 'Menyiapkan…' : 'Aktifkan Remote'}
-            </button>
-            <button
-              className="btn-cancel"
-              onClick={() => runSetup('headless')}
-              disabled={setup.running}
-              title="Virtual desktop tanpa monitor (Xvfb + XFCE + x11vnc)"
-            >
-              Mode Headless
-            </button>
-          </>
-        )}
+        <button
+          className="btn-save"
+          onClick={() => runSetup('normal')}
+          disabled={setup.running}
+          title="Instal & aktifkan x11vnc di target (untuk PC dengan monitor)"
+        >
+          {setup.running ? 'Menyiapkan…' : 'Aktifkan Remote'}
+        </button>
+        <button
+          className="btn-cancel"
+          onClick={() => runSetup('headless')}
+          disabled={setup.running}
+          title="Virtual desktop tanpa monitor (Xvfb + XFCE + x11vnc) — untuk PC headless atau layar hitam"
+        >
+          Mode Headless
+        </button>
         <button className="btn-cancel terminal-close" onClick={() => navigate('/devices')}>
           Tutup
         </button>
