@@ -30,7 +30,7 @@ function MarqueeText({ children }) {
       <span
         className="marquee-track"
         ref={innerRef}
-        style={overflow ? { animationDuration: `${Math.max(4, (innerRef.current?.scrollWidth || 0) / 2 / 35)}s` } : undefined}
+        style={overflow ? { animationDuration: `${Math.max(6, (innerRef.current?.scrollWidth || 0) / 2 / 18)}s` } : undefined}
       >
         <span>{children}</span>
         {overflow && <span aria-hidden="true">{children}</span>}
