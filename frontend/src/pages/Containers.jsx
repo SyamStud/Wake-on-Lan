@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useDevices } from '../contexts/DevicesContext.jsx'
 import { useToast } from '../contexts/ToastContext.jsx'
@@ -11,6 +11,32 @@ function StatePill({ state }) {
   if (state === 'running') return <span className="pill online"><i></i>Running</span>
   if (state === 'exited') return <span className="pill offline"><i></i>Exited</span>
   return <span className="pill unknown"><i></i>{state || '—'}</span>
+}
+
+function MarqueeText({ children }) {
+  const outerRef = useRef(null)
+  const innerRef = useRef(null)
+  const [overflow, setOverflow] = useState(false)
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current
+    const inner = innerRef.current
+    if (!outer || !inner) return
+    setOverflow(inner.scrollWidth > outer.clientWidth)
+  }, [children])
+
+  return (
+    <div className={`marquee${overflow ? ' marquee-overflow' : ''}`} ref={outerRef}>
+      <span
+        className="marquee-track"
+        ref={innerRef}
+        style={overflow ? { animationDuration: `${Math.max(4, (innerRef.current?.scrollWidth || 0) / 2 / 35)}s` } : undefined}
+      >
+        <span>{children}</span>
+        {overflow && <span aria-hidden="true">{children}</span>}
+      </span>
+    </div>
+  )
 }
 
 export default function Containers() {
@@ -103,16 +129,16 @@ export default function Containers() {
                   const running = RUNNING_STATES.has(c.state)
                   return (
                     <tr key={c.id || c.name} data-name={c.name}>
-                      <td className="container-name">{c.name}</td>
-                      <td className="container-image">{c.image}</td>
+                      <td className="container-name"><MarqueeText>{c.name}</MarqueeText></td>
+                      <td className="container-image"><MarqueeText>{c.image}</MarqueeText></td>
                       <td><StatePill state={c.state} /></td>
-                      <td className="muted">{c.status}</td>
-                      <td className="muted container-ports">{c.ports}</td>
+                      <td className="muted"><MarqueeText>{c.status}</MarqueeText></td>
+                      <td className="muted container-ports"><MarqueeText>{c.ports}</MarqueeText></td>
                       <td>
                         <div className="container-actions">
                           {running ? (
                             <button
-                              className="icon-btn"
+                              className="icon-btn btn-stop"
                               title="Stop"
                               aria-label={`Stop ${c.name}`}
                               disabled={busy === `${c.name}:stop`}
@@ -122,7 +148,7 @@ export default function Containers() {
                             </button>
                           ) : (
                             <button
-                              className="icon-btn"
+                              className="icon-btn btn-start"
                               title="Start"
                               aria-label={`Start ${c.name}`}
                               disabled={busy === `${c.name}:start`}

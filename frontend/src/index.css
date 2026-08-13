@@ -1170,6 +1170,22 @@ input::placeholder { color: #94a3b8; }
 }
 
 /* ============ Containers Page ============ */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+  display: block;
+}
+.marquee-track { display: inline-block; }
+.marquee-overflow .marquee-track {
+  display: inline-flex;
+  animation: marquee-scroll linear infinite;
+}
+.marquee-overflow .marquee-track > span { padding-right: 40px; }
+@keyframes marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+
 .container-name { font-weight: 600; }
 .container-image {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -1179,15 +1195,15 @@ input::placeholder { color: #94a3b8; }
 .container-ports {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .container-actions { display: flex; gap: 6px; }
 .container-actions .icon-btn { width: 30px; height: 30px; padding: 0; border-radius: 8px; }
 .container-actions .icon-btn svg { width: 15px; height: 15px; }
 .container-actions .icon-btn:disabled { opacity: .45; pointer-events: none; }
+.container-actions .btn-start { color: var(--green); background: var(--green-light); border: 1px solid transparent; }
+.container-actions .btn-start:hover { background: #c9efd8; }
+.container-actions .btn-stop { color: var(--danger); background: #fee2e2; border: 1px solid transparent; }
+.container-actions .btn-stop:hover { background: #fecaca; }
 
 /* Scan Loading Popup */
 .scan-overlay {
