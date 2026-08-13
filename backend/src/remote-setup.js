@@ -22,16 +22,22 @@ listening() {
   ss -tln 2>/dev/null | grep -q ':5900' || netstat -tln 2>/dev/null | grep -q ':5900'
 }
 
-start_direct() {
+cleanup_display() {
   command -v systemctl >/dev/null 2>&1 && systemctl stop x11vnc >/dev/null 2>&1
   pkill -f x11vnc 2>/dev/null
-  pkill Xvfb 2>/dev/null
+  pkill -9 Xvfb 2>/dev/null
   sleep 1
+  rm -f /tmp/.X11-unix/X1 /tmp/.X1-lock
+}
+
+start_direct() {
+  cleanup_display
   setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
   sleep 8
 }
 
 if command -v systemctl >/dev/null 2>&1; then
+  cleanup_display
   mkdir -p /etc/systemd/system
   cat > /etc/systemd/system/x11vnc.service <<'EOF'
 [Unit]
