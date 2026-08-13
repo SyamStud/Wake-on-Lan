@@ -17,8 +17,23 @@ command -v Xvfb >/dev/null 2>&1 || install_pkg xvfb
 if ! command -v startxfce4 >/dev/null 2>&1; then
   install_pkg xfce4 xfce4-terminal dbus-x11
 fi
-mkdir -p /etc/systemd/system
-cat > /etc/systemd/system/x11vnc.service <<'EOF'
+
+listening() {
+  ss -tln 2>/dev/null | grep -q ':5900' || netstat -tln 2>/dev/null | grep -q ':5900'
+}
+
+start_direct() {
+  command -v systemctl >/dev/null 2>&1 && systemctl stop x11vnc >/dev/null 2>&1
+  pkill -f x11vnc 2>/dev/null
+  pkill Xvfb 2>/dev/null
+  sleep 1
+  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
+  sleep 8
+}
+
+if command -v systemctl >/dev/null 2>&1; then
+  mkdir -p /etc/systemd/system
+  cat > /etc/systemd/system/x11vnc.service <<'EOF'
 [Unit]
 Description=x11vnc virtual desktop (headless)
 After=network.target
@@ -31,22 +46,20 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
-if command -v systemctl >/dev/null 2>&1; then
   systemctl daemon-reload
   systemctl enable x11vnc >/dev/null 2>&1
-  systemctl restart x11vnc
-else
-  pkill -f x11vnc 2>/dev/null
-  pkill Xvfb 2>/dev/null
-  sleep 1
-  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
+  systemctl restart x11vnc >/dev/null 2>&1
+  sleep 8
+  listening && echo "VNC_READY" && exit 0
 fi
-sleep 8
-if ss -tln 2>/dev/null | grep -q ':5900' || netstat -tln 2>/dev/null | grep -q ':5900'; then
+
+start_direct
+if listening; then
   echo "VNC_READY"
 else
   echo "VNC_FAIL"
   tail -15 /var/log/x11vnc.log 2>/dev/null
+  command -v journalctl >/dev/null 2>&1 && journalctl -u x11vnc -n 10 --no-pager 2>/dev/null
 fi
 `
 }
@@ -102,6 +115,7 @@ if ss -tln 2>/dev/null | grep -q ':5900' || netstat -tln 2>/dev/null | grep -q '
 else
   echo "VNC_FAIL"
   tail -15 /var/log/x11vnc.log 2>/dev/null
+  command -v journalctl >/dev/null 2>&1 && journalctl -u x11vnc -n 10 --no-pager 2>/dev/null
 fi
 `
 }
