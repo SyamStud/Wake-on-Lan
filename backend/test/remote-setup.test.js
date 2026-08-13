@@ -21,7 +21,7 @@ test('script setup VNC: tidak memakai opsi yang tidak didukung', () => {
 
 test('script headless: Xvfb + desktop + x11vnc di display :1', () => {
   const script = buildVncHeadlessScript()
-  assert.match(script, /Xvfb :1 -screen 0 1280x720x24/)
+  assert.match(script, /Xvfb :1 -screen 0 1280x720x24 -ac/)
   assert.match(script, /startxfce4/)
   assert.match(script, /x11vnc -display :1/)
   assert.match(script, /VNC_READY/)

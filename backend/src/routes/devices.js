@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { ValidationError, NotFoundError } from '../device-store.js'
 import { setupVncOnTarget } from '../remote-setup.js'
+import { createContainers } from '../containers.js'
 
 const wrap = (fn) => async (req, res) => {
   try {
@@ -14,6 +15,7 @@ const wrap = (fn) => async (req, res) => {
 
 export default function createDevicesRouter({ store, actions, log = () => {} }) {
   const router = Router()
+  const containers = createContainers()
 
   router.get('/', (req, res) => {
     res.json(store.list())
@@ -90,6 +92,26 @@ export default function createDevicesRouter({ store, actions, log = () => {} }) 
     if (!device) return res.status(404).json({ error: 'Device tidak ditemukan' })
     const message = await actions.shutdown(device)
     res.json({ ok: true, message })
+  }))
+
+  router.get('/:id/containers', wrap(async (req, res) => {
+    const device = store.getByIdFull(req.params.id)
+    if (!device) return res.status(404).json({ error: 'Device tidak ditemukan' })
+    const containersList = await containers.listContainers(device)
+    res.json({ containers: containersList })
+  }))
+
+  router.post('/:id/containers/:name/:action', wrap(async (req, res) => {
+    const device = store.getByIdFull(req.params.id)
+    if (!device) return res.status(404).json({ error: 'Device tidak ditemukan' })
+    const { name, action } = req.params
+    const output = await containers.containerAction(device, name, action)
+    log('docker_action', {
+      deviceId: device.id,
+      deviceName: device.name,
+      detail: `${action} container ${name}`,
+    })
+    res.json({ ok: true, message: `Container "${name}" berhasil di-${action}`, output })
   }))
 
   return router

@@ -66,6 +66,54 @@ export function shutdownViaSsh(device) {
   })
 }
 
+export function execViaSsh(device, command, { timeoutMs = 20000 } = {}) {
+  const { ssh_host, ssh_port, ssh_user, ssh_auth, ssh_key_path, ssh_password } = device
+  if (!ssh_host || !ssh_user) {
+    return Promise.reject(new Error('Konfigurasi SSH device belum lengkap'))
+  }
+
+  return new Promise((resolve, reject) => {
+    const conn = new Client()
+    const config = { host: ssh_host, port: ssh_port || 22, username: ssh_user, readyTimeout: 10000 }
+    if (ssh_auth === 'password' && ssh_password) {
+      config.password = ssh_password
+    } else if (ssh_key_path) {
+      try {
+        config.privateKey = fs.readFileSync(ssh_key_path)
+      } catch (err) {
+        return reject(new Error(`Tidak bisa membaca SSH key ${ssh_key_path}: ${err.message}`))
+      }
+    } else {
+      return reject(new Error('Auth SSH tidak lengkap (perlu password atau key path)'))
+    }
+
+    let finished = false
+    const done = (err, result) => {
+      if (finished) return
+      finished = true
+      clearTimeout(timer)
+      conn.end()
+      if (err) reject(err)
+      else resolve(result)
+    }
+
+    let timer = setTimeout(() => done(new Error(`Perintah SSH timeout (${timeoutMs / 1000}s)`)), timeoutMs)
+
+    conn.on('ready', () => {
+      conn.exec(command, (err, stream) => {
+        if (err) return done(err)
+        let stdout = ''
+        let stderr = ''
+        stream.on('close', (code) => done(null, { code, stdout: stdout.trim(), stderr: stderr.trim() }))
+        stream.on('data', (d) => (stdout += d.toString()))
+        stream.stderr.on('data', (d) => (stderr += d.toString()))
+      })
+    })
+    conn.on('error', (err) => done(err))
+    conn.connect(config)
+  })
+}
+
 export function checkOnline(host, port = 22, timeoutMs = 1500) {
   if (!host) return Promise.resolve(false)
   return probeHost(host, port, timeoutMs)

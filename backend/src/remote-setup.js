@@ -27,7 +27,7 @@ start_direct() {
   pkill -f x11vnc 2>/dev/null
   pkill Xvfb 2>/dev/null
   sleep 1
-  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
+  setsid sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1' </dev/null >/dev/null 2>&1 &
   sleep 8
 }
 
@@ -40,7 +40,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c 'Xvfb :1 -screen 0 1280x720x24 >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
+ExecStart=/bin/sh -c 'Xvfb :1 -screen 0 1280x720x24 -ac >/dev/null 2>&1 & sleep 2; HOME=/root DISPLAY=:1 dbus-launch startxfce4 >/dev/null 2>&1 & sleep 4; exec x11vnc -display :1 -forever -shared -nopw -noxdamage -nowf -noscr -nodpms >/var/log/x11vnc.log 2>&1'
 Restart=always
 
 [Install]
